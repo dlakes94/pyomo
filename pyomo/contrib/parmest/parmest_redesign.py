@@ -20,8 +20,8 @@
 # TODO: _treemaker is not used in parmest, the code could be moved to scenario tree if needed
 # TODO: Create additional built in objective expressions in an Enum class which includes SSE (see SSE function below)
 # TODO: Clean up the use of theta_names through out the code.  The Experiment returns the CUID of each theta and this can be used directly (instead of the name)
-# TODO: Clean up the use of updated_theta_names, model_theta_names, estimator_theta_names
-# TODO: _return_theta_names should no longer be needed, if getting theta from individual models
+# TODO: Clean up the use of updated_theta_names, model_theta_names, estimator_theta_names.  Not sure if estimator_theta_names is the union or intersect of thetas in each model
+# TODO: _return_theta_names should no longer be needed
 
 # False implies always use the EF that is local to parmest
 use_mpisppy = True  # Use it if we can but use local if not.
