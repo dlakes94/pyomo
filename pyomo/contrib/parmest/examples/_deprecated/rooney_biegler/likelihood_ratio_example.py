@@ -9,9 +9,11 @@
 #  This software is distributed under the 3-clause BSD License.
 #  ___________________________________________________________________________
 
+import numpy as np
 import pandas as pd
-import pyomo.contrib.parmest.parmest as parmest
-from pyomo.contrib.parmest.examples.rooney_biegler.rooney_biegler import (
+from itertools import product
+import pyomo.contrib.parmest.parmest_deprecated as parmest
+from pyomo.contrib.parmest.examples._deprecated.rooney_biegler.rooney_biegler import (
     rooney_biegler_model,
 )
 
@@ -39,17 +41,20 @@ def main():
     # Parameter estimation
     obj, theta = pest.theta_est()
 
-    # Parameter estimation with bootstrap resampling
-    bootstrap_theta = pest.theta_est_bootstrap(50, seed=4581)
+    # Find the objective value at each theta estimate
+    asym = np.arange(10, 30, 2)
+    rate = np.arange(0, 1.5, 0.1)
+    theta_vals = pd.DataFrame(
+        list(product(asym, rate)), columns=['asymptote', 'rate_constant']
+    )
+    obj_at_theta = pest.objective_at_theta(theta_vals)
+
+    # Run the likelihood ratio test
+    LR = pest.likelihood_ratio_test(obj_at_theta, obj, [0.8, 0.85, 0.9, 0.95])
 
     # Plot results
-    parmest.graphics.pairwise_plot(bootstrap_theta, title='Bootstrap theta')
     parmest.graphics.pairwise_plot(
-        bootstrap_theta,
-        theta,
-        0.8,
-        ['MVN', 'KDE', 'Rect'],
-        title='Bootstrap theta with confidence regions',
+        LR, theta, 0.8, title='LR results within 80% confidence region'
     )
 
 

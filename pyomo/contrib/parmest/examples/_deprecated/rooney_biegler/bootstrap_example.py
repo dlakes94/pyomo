@@ -10,8 +10,8 @@
 #  ___________________________________________________________________________
 
 import pandas as pd
-import pyomo.contrib.parmest.parmest as parmest
-from pyomo.contrib.parmest.examples.rooney_biegler.rooney_biegler import (
+import pyomo.contrib.parmest.parmest_deprecated as parmest
+from pyomo.contrib.parmest.examples._deprecated.rooney_biegler.rooney_biegler import (
     rooney_biegler_model,
 )
 
@@ -36,24 +36,21 @@ def main():
     # Create an instance of the parmest estimator
     pest = parmest.Estimator(rooney_biegler_model, data, theta_names, SSE)
 
-    # Parameter estimation and covariance
-    n = 6  # total number of data points used in the objective (y in 6 scenarios)
-    obj, theta, cov = pest.theta_est(calc_cov=True, cov_n=n)
+    # Parameter estimation
+    obj, theta = pest.theta_est()
 
-    # Plot theta estimates using a multivariate Gaussian distribution
+    # Parameter estimation with bootstrap resampling
+    bootstrap_theta = pest.theta_est_bootstrap(50, seed=4581)
+
+    # Plot results
+    parmest.graphics.pairwise_plot(bootstrap_theta, title='Bootstrap theta')
     parmest.graphics.pairwise_plot(
-        (theta, cov, 100),
-        theta_star=theta,
-        alpha=0.8,
-        distributions=['MVN'],
-        title='Theta estimates within 80% confidence region',
+        bootstrap_theta,
+        theta,
+        0.8,
+        ['MVN', 'KDE', 'Rect'],
+        title='Bootstrap theta with confidence regions',
     )
-
-    # Assert statements compare parameter estimation (theta) to an expected value
-    relative_error = abs(theta['asymptote'] - 19.1426) / 19.1426
-    assert relative_error < 0.01
-    relative_error = abs(theta['rate_constant'] - 0.5311) / 0.5311
-    assert relative_error < 0.01
 
 
 if __name__ == "__main__":

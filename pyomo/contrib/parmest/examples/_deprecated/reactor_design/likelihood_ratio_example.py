@@ -9,10 +9,12 @@
 #  This software is distributed under the 3-clause BSD License.
 #  ___________________________________________________________________________
 
+import numpy as np
 import pandas as pd
+from itertools import product
 from os.path import join, abspath, dirname
-import pyomo.contrib.parmest.parmest as parmest
-from pyomo.contrib.parmest.examples.reactor_design.reactor_design import (
+import pyomo.contrib.parmest.parmest_deprecated as parmest
+from pyomo.contrib.parmest.examples._deprecated.reactor_design.reactor_design import (
     reactor_design_model,
 )
 
@@ -42,16 +44,20 @@ def main():
     # Parameter estimation
     obj, theta = pest.theta_est()
 
-    # Assert statements compare parameter estimation (theta) to an expected value
-    k1_expected = 5.0 / 6.0
-    k2_expected = 5.0 / 3.0
-    k3_expected = 1.0 / 6000.0
-    relative_error = abs(theta["k1"] - k1_expected) / k1_expected
-    assert relative_error < 0.05
-    relative_error = abs(theta["k2"] - k2_expected) / k2_expected
-    assert relative_error < 0.05
-    relative_error = abs(theta["k3"] - k3_expected) / k3_expected
-    assert relative_error < 0.05
+    # Find the objective value at each theta estimate
+    k1 = [0.8, 0.85, 0.9]
+    k2 = [1.6, 1.65, 1.7]
+    k3 = [0.00016, 0.000165, 0.00017]
+    theta_vals = pd.DataFrame(list(product(k1, k2, k3)), columns=["k1", "k2", "k3"])
+    obj_at_theta = pest.objective_at_theta(theta_vals)
+
+    # Run the likelihood ratio test
+    LR = pest.likelihood_ratio_test(obj_at_theta, obj, [0.8, 0.85, 0.9, 0.95])
+
+    # Plot results
+    parmest.graphics.pairwise_plot(
+        LR, theta, 0.9, title="LR results within 90% confidence region"
+    )
 
 
 if __name__ == "__main__":

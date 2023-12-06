@@ -11,49 +11,40 @@
 
 import pandas as pd
 from os.path import join, abspath, dirname
-import pyomo.contrib.parmest.parmest as parmest
-from pyomo.contrib.parmest.examples.reactor_design.reactor_design import (
+import pyomo.contrib.parmest.parmest_deprecated as parmest
+from pyomo.contrib.parmest.examples._deprecated.reactor_design.reactor_design import (
     reactor_design_model,
 )
 
 
 def main():
+    # Parameter estimation using multisensor data
+
     # Vars to estimate
     theta_names = ["k1", "k2", "k3"]
 
-    # Data
+    # Data, includes multiple sensors for ca and cc
     file_dirname = dirname(abspath(str(__file__)))
-    file_name = abspath(join(file_dirname, "reactor_data.csv"))
+    file_name = abspath(join(file_dirname, "reactor_data_multisensor.csv"))
     data = pd.read_csv(file_name)
 
     # Sum of squared error function
-    def SSE(model, data):
+    def SSE_multisensor(model, data):
         expr = (
-            (float(data.iloc[0]["ca"]) - model.ca) ** 2
+            ((float(data.iloc[0]["ca1"]) - model.ca) ** 2) * (1 / 3)
+            + ((float(data.iloc[0]["ca2"]) - model.ca) ** 2) * (1 / 3)
+            + ((float(data.iloc[0]["ca3"]) - model.ca) ** 2) * (1 / 3)
             + (float(data.iloc[0]["cb"]) - model.cb) ** 2
-            + (float(data.iloc[0]["cc"]) - model.cc) ** 2
+            + ((float(data.iloc[0]["cc1"]) - model.cc) ** 2) * (1 / 2)
+            + ((float(data.iloc[0]["cc2"]) - model.cc) ** 2) * (1 / 2)
             + (float(data.iloc[0]["cd"]) - model.cd) ** 2
         )
         return expr
 
-    # Create an instance of the parmest estimator
-    pest = parmest.Estimator(reactor_design_model, data, theta_names, SSE)
-
-    # Parameter estimation
+    pest = parmest.Estimator(reactor_design_model, data, theta_names, SSE_multisensor)
     obj, theta = pest.theta_est()
-
-    # Parameter estimation with bootstrap resampling
-    bootstrap_theta = pest.theta_est_bootstrap(50)
-
-    # Plot results
-    parmest.graphics.pairwise_plot(bootstrap_theta, title="Bootstrap theta")
-    parmest.graphics.pairwise_plot(
-        bootstrap_theta,
-        theta,
-        0.8,
-        ["MVN", "KDE", "Rect"],
-        title="Bootstrap theta with confidence regions",
-    )
+    print(obj)
+    print(theta)
 
 
 if __name__ == "__main__":
