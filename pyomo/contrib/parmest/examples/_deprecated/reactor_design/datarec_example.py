@@ -11,8 +11,8 @@
 
 import numpy as np
 import pandas as pd
-import pyomo.contrib.parmest.parmest as parmest
-from pyomo.contrib.parmest.examples.reactor_design.reactor_design import (
+import pyomo.contrib.parmest.parmest_deprecated as parmest
+from pyomo.contrib.parmest.examples._deprecated.reactor_design.reactor_design import (
     reactor_design_model,
 )
 

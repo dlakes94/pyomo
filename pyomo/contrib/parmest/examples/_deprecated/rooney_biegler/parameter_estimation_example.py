@@ -9,11 +9,9 @@
 #  This software is distributed under the 3-clause BSD License.
 #  ___________________________________________________________________________
 
-import numpy as np
 import pandas as pd
-from itertools import product
-import pyomo.contrib.parmest.parmest as parmest
-from pyomo.contrib.parmest.examples.rooney_biegler.rooney_biegler import (
+import pyomo.contrib.parmest.parmest_deprecated as parmest
+from pyomo.contrib.parmest.examples._deprecated.rooney_biegler.rooney_biegler import (
     rooney_biegler_model,
 )
 
@@ -38,24 +36,24 @@ def main():
     # Create an instance of the parmest estimator
     pest = parmest.Estimator(rooney_biegler_model, data, theta_names, SSE)
 
-    # Parameter estimation
-    obj, theta = pest.theta_est()
+    # Parameter estimation and covariance
+    n = 6  # total number of data points used in the objective (y in 6 scenarios)
+    obj, theta, cov = pest.theta_est(calc_cov=True, cov_n=n)
 
-    # Find the objective value at each theta estimate
-    asym = np.arange(10, 30, 2)
-    rate = np.arange(0, 1.5, 0.1)
-    theta_vals = pd.DataFrame(
-        list(product(asym, rate)), columns=['asymptote', 'rate_constant']
-    )
-    obj_at_theta = pest.objective_at_theta(theta_vals)
-
-    # Run the likelihood ratio test
-    LR = pest.likelihood_ratio_test(obj_at_theta, obj, [0.8, 0.85, 0.9, 0.95])
-
-    # Plot results
+    # Plot theta estimates using a multivariate Gaussian distribution
     parmest.graphics.pairwise_plot(
-        LR, theta, 0.8, title='LR results within 80% confidence region'
+        (theta, cov, 100),
+        theta_star=theta,
+        alpha=0.8,
+        distributions=['MVN'],
+        title='Theta estimates within 80% confidence region',
     )
+
+    # Assert statements compare parameter estimation (theta) to an expected value
+    relative_error = abs(theta['asymptote'] - 19.1426) / 19.1426
+    assert relative_error < 0.01
+    relative_error = abs(theta['rate_constant'] - 0.5311) / 0.5311
+    assert relative_error < 0.01
 
 
 if __name__ == "__main__":

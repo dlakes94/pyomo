@@ -12,8 +12,8 @@
 import pandas as pd
 from os.path import join, abspath, dirname
 
-import pyomo.contrib.parmest.parmest as parmest
-from pyomo.contrib.parmest.examples.reactor_design.reactor_design import (
+import pyomo.contrib.parmest.parmest_deprecated as parmest
+from pyomo.contrib.parmest.examples._deprecated.reactor_design.reactor_design import (
     reactor_design_model,
 )
 

@@ -11,8 +11,8 @@
 
 import json
 from os.path import join, abspath, dirname
-import pyomo.contrib.parmest.parmest as parmest
-from pyomo.contrib.parmest.examples.semibatch.semibatch import generate_model
+import pyomo.contrib.parmest.parmest_deprecated as parmest
+from pyomo.contrib.parmest.examples._deprecated.semibatch.semibatch import generate_model
 import pyomo.contrib.parmest.scenariocreator as sc
 
 

@@ -31,7 +31,7 @@ from pyomo.environ import (
     exp,
     value,
 )
-import pyomo.contrib.parmest.parmest as parmest
+import pyomo.contrib.parmest.parmest_deprecated as parmest
 
 
 def simple_reaction_model(data):
